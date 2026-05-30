@@ -1,6 +1,6 @@
 # AI-Assisted Security Research Dashboard
 
-This project is a locally hosted open-source security research feed that aggregates 30+ security research source. Utilizing a multi-stage AI pipline to perform triage and summary of articles, content ranking, and display of articles based on tunable prompts
+This project is a locally hosted open-source security research feed that aggregates 30+ security research sources, utilizing a multi-stage AI pipeline to perform triage and summary of articles, content ranking, and display of articles based on tunable prompts.
 
 ![Dashboard](https://img.shields.io/badge/stack-FastAPI%20%7C%20HTMX%20%7C%20SQLite-blue)
 ![AI](https://img.shields.io/badge/AI-Claude%20Haiku%20%2B%20Sonnet-purple)
@@ -10,9 +10,9 @@ This project is a locally hosted open-source security research feed that aggrega
 
 ## Overview
 
-There are a great number of articles containg all sorts of information, while all of the sources in the sources.yaml provide generally high quallity reporting and research not all of it is going to be applicable to ones specific interest in needs. The intention of this project is that you can tune the parameters of the ranking system to display on the dashboard aritcles which are more relevant to your personal/professional interests.
+Although all of the sources in `sources.yaml` provide generally high-quality reporting and research, not all of it will be applicable to one's specific interests and needs. The intention of this project is that a user can tune the parameters of the ranking system as well as the prompts used by the evaluator and summarizer to surface the information most relevant to them on a locally hosted dashboard.
 
-This tool provides automated triage as every article passes through a two-model AI pipeline that scores technical depth and extracts structured data (TTPs, tooling, CVEs, threat actors), then ranks results by content quality as it relates to user provided parameters rather than recency alone. The output is dispayed via a locally hosted dashboard in score order.
+This tool provides automated triage as every article passes through a two-model AI pipeline that scores technical depth and extracts structured data (TTPs, tooling, CVEs, threat actors), then ranks results by content quality as it relates to user-provided parameters rather than recency alone. The output is displayed via a locally hosted dashboard in score order.
 
 ---
 
@@ -26,19 +26,19 @@ Articles move through a state machine with five stages:
 fetched → evaluated_rejected | preliminary_rated | evaluated_accepted → summarized → ranked
 ```
 
-**1. Fetcher** — Scrapes RSS feeds from all configured sources. Deduplicates by URL and normalized title. Respects a configurable lookback window (default 7 days).
+**1. Fetcher** — Scrapes RSS feeds from all configured sources based on lookback windows (default 7 days), deduplicates by URL/title.
 
-**2. Evaluator** (Claude Haiku) — Cheap, fast triage. Scores each article 0–100 on technical depth using only the title and first 1,000 characters. Articles below threshold go to Low Priority; articles above proceed to full summarization. Runs up to 3 concurrent requests with exponential backoff on rate limits.
+**2. Evaluator** (Claude Haiku) — Quick and dirty initial scoring of each article 0–100 based on a user-defined prompt. Scoring is done using the title and first 1,000 characters of the article. Articles below a user-defined threshold are assigned low priority and do not move on in the pipeline, while articles above this cutoff proceed to full summarization. Runs up to 3 concurrent requests with exponential backoff on rate limits.
 
-**3. Summarizer** (Claude Sonnet) — Deep analysis on accepted articles. Sends up to 12,000 characters and returns structured JSON: a 3–5 sentence technique breakdown, tooling list with purpose, named threat actors, CVE IDs, and a `pt_relevance` score (0.0–1.0) measuring how much the article advances understanding of attack mechanics.
+**3. Summarizer** (Claude Sonnet) — Deep analysis of evaluator-accepted articles. Sends up to 12,000 characters and returns structured JSON with a 3–5 sentence technique breakdown, tooling list with purpose, named threat actors, CVE IDs, and a `pt_relevance` score (0.0–1.0) measuring how much the article relates to the user-provided parameters.
 
-**4. Scorer** — Local math, no API calls. Combines three signals into a final 0–100 score:
+**4. Scorer** — Combines the three signals below into a final overall score, which is used for article ranking.
 
 | Signal | Weight | Method |
 |---|---|---|
-| `pt_relevance` | 65% | Sonnet's quality judgment |
-| Recency | 15% | Exponential decay, 14-day half-life |
-| Source reputation | 20% | Configurable per-source rating ÷ 5 |
+| `pt_relevance` | configurable | Sonnet's quality judgment |
+| Recency | configurable | Exponential decay, configurable half-life |
+| Source reputation | configurable | Configurable per-source rating ÷ 5 |
 
 **5. CVE Enricher** — Fetches CVSS base scores and severity ratings from the NVD API for any CVEs the summarizer extracted. Deduplicates CVE lookups across articles to minimize API calls.
 
@@ -101,7 +101,7 @@ pip install -r requirements.txt
 # Configure API keys
 copy .env.example .env             # Windows
 cp .env.example .env               # macOS/Linux
-# Edit .env and add your ANTHROPIC_API_KEY as well as tune your prompts 
+# Edit .env and add your ANTHROPIC_API_KEY and tune your prompts
 
 # Run the server
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
@@ -137,16 +137,13 @@ sources:
 
 - `lookback_days` — how far back to fetch articles on each run
 - `refresh_interval_hours` — how often the pipeline auto-runs in the background
-- `reputation` — 1–5 score contributing 20% of the final article ranking
+- `reputation` — 1–5 score contributing to the final article ranking (weight configurable in `.env`)
 
-Add any RSS feed by adding an entry. No code changes required.
+Add any RSS feed by adding an entry matching the existing schema — no code changes required.
 
 ### Environment — `.env`
 
-```
-ANTHROPIC_API_KEY=your_key_here
-NVD_API_KEY=your_key_here          # optional; increases NVD rate limit from 5 to 50 req/30s
-```
+All content scoring and prompt configuration is read from `.env` — copy the provided `.env.example` to get started. It covers API keys, evaluator and summarizer prompts, the acceptance threshold, scorer weights, and recency decay.
 
 ---
 
