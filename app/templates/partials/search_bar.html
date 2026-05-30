@@ -1,0 +1,62 @@
+<div class="search-bar" id="search-bar">
+  <div class="search-row">
+    <input
+      class="search-input"
+      type="search"
+      name="q"
+      placeholder="Search titles and summaries..."
+      hx-get="/search"
+      hx-trigger="search"
+      hx-target="#cards-container"
+    >
+    <button
+      class="btn-search"
+      type="button"
+      hx-get="/search"
+      hx-target="#cards-container"
+      hx-include=".search-input"
+    >
+      Search
+    </button>
+    <button
+      class="btn-clear-search"
+      type="button"
+      hx-get="/ranked"
+      hx-target="#cards-container"
+      onclick="clearSearch()"
+    >
+      Clear
+    </button>
+    <button
+      class="btn-filter-toggle"
+      type="button"
+      onclick="this.closest('.search-bar').classList.toggle('filters-open')"
+    >
+      Sources <span class="filter-caret">▾</span>
+    </button>
+  </div>
+
+  <div class="filter-panel">
+    {% for source in sources %}
+    <button class="source-btn" onclick="selectSource(this, '{{ source.name }}')">
+      {{ source.name }}
+    </button>
+    {% endfor %}
+  </div>
+</div>
+
+<script>
+  function selectSource(btn, sourceName) {
+    const wasActive = btn.classList.contains('active');
+    document.querySelectorAll('.source-btn').forEach(b => b.classList.remove('active'));
+    if (wasActive) {
+      htmx.ajax('GET', '/ranked', {target: '#cards-container'});
+      setSearchActive(false);
+    } else {
+      btn.classList.add('active');
+      const url = '/search?sources=' + encodeURIComponent(sourceName) + '&sort=date';
+      htmx.ajax('GET', url, {target: '#cards-container'});
+      setSearchActive(true);
+    }
+  }
+</script>

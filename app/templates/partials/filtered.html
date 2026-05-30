@@ -1,0 +1,32 @@
+<div id="filtered-panel">
+  <div class="filtered-header">
+    <strong>Filtered articles ({{ rows | length }})</strong>
+    <button class="btn-close" onclick="document.getElementById('filtered-panel').remove()">✕ Close</button>
+  </div>
+  {% if not rows %}
+  <div class="empty-state">
+    <strong>No filtered articles yet.</strong>
+  </div>
+  {% else %}
+  {% for row in rows %}
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <a href="{{ row.url }}" target="_blank" rel="noopener noreferrer">{{ row.title }}</a>
+        <div class="card-meta">{{ row.source_name }} &middot; {{ row.published_at }}</div>
+      </div>
+      <div class="card-header-right">
+        <span class="score-badge low">{{ row.total_score | round(0) | int }}</span>
+        <button class="btn-force-process"
+                hx-post="/force-process/{{ row.id }}"
+                hx-target="closest .card-header-right"
+                hx-swap="innerHTML">
+          Process
+        </button>
+      </div>
+    </div>
+    <p class="card-summary">{{ row.content_text }}</p>
+  </div>
+  {% endfor %}
+  {% endif %}
+</div>

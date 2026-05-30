@@ -1,0 +1,25 @@
+{% if error %}
+<div class="cve-panel cve-panel-error">{{ error }}</div>
+{% else %}
+<div class="cve-panel">
+  <div class="cve-panel-header">
+    <strong>{{ cve_id }}</strong>
+    {% if score is not none %}
+    <span class="cve-severity cve-severity-{{ severity | lower }}">
+      {{ severity }} {{ score }}
+    </span>
+    {% endif %}
+    <button class="btn-cve-filter"
+            hx-get="/search?cve={{ cve_id }}"
+            hx-target="#cards-container">
+      Filter by {{ cve_id }}
+    </button>
+  </div>
+  {% if description %}
+  <p class="cve-panel-desc">{{ description }}</p>
+  {% endif %}
+  {% if vector %}
+  <div class="cve-panel-vector">{{ vector }}</div>
+  {% endif %}
+</div>
+{% endif %}

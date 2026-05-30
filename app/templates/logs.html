@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logs — AI_ASSISTED_RESEARCH</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/htmx.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>AI_ASSISTED_RESEARCH</h1>
+    <div class="header-right">
+      <a href="/" class="btn-filtered">← Dashboard</a>
+      <a href="/stats" class="btn-filtered">Stats</a>
+    </div>
+  </header>
+  <main>
+    <div class="logs-toolbar">
+      <span class="log-label">Application logs (last 500 lines) — auto-refreshing every 3s</span>
+      <label class="log-scroll-toggle">
+        <input type="checkbox" id="auto-scroll" checked> Auto-scroll
+      </label>
+    </div>
+    <div class="log-container"
+         id="log-container"
+         hx-get="/logs/lines"
+         hx-trigger="every 3s"
+         hx-target="#log-lines"
+         hx-swap="innerHTML">
+      {% include "partials/log_lines.html" %}
+    </div>
+  </main>
+  <script>
+    const container = document.getElementById('log-container');
+    const checkbox  = document.getElementById('auto-scroll');
+    function scrollBottom() {
+      if (checkbox.checked) container.scrollTop = container.scrollHeight;
+    }
+    scrollBottom();
+    document.body.addEventListener('htmx:afterSwap', scrollBottom);
+  </script>
+</body>
+</html>

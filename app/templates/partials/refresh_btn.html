@@ -1,0 +1,13 @@
+<div id="refresh-container"
+     hx-get="/status"
+     hx-trigger="every {% if pipeline_running %}3{% else %}30{% endif %}s"
+     hx-swap="outerHTML">
+  <span class="last-refresh">Last refreshed: {{ last_refresh }}</span>
+  <button class="btn-refresh"
+          {% if pipeline_running %}disabled{% endif %}
+          hx-post="/refresh"
+          hx-target="#refresh-container"
+          hx-swap="outerHTML">
+    {% if pipeline_running %}<span class="spinner"></span>{{ pipeline_stage or "Running..." }}{% else %}Refresh{% endif %}
+  </button>
+</div>

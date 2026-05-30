@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Source Stats — Security Research</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://unpkg.com/htmx.org@1.9.12/dist/htmx.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Security <span>Research</span></h1>
+    <div class="header-right">
+      <button class="btn-filtered"
+              hx-post="/rescore"
+              hx-swap="none"
+              onclick="this.textContent='Done ✓'">
+        Re-score All
+      </button>
+      <a href="/" class="btn-filtered">← Dashboard</a>
+    </div>
+  </header>
+
+  <main>
+    <h2 class="stats-heading">Source Performance</h2>
+    <table class="stats-table">
+      <thead>
+        <tr>
+          <th>Source</th>
+          <th>Rep</th>
+          <th>Total</th>
+          <th>Ranked</th>
+          <th>Filtered</th>
+          <th>Failed</th>
+          <th>Hit Rate</th>
+          <th>Avg Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        {% set hit_rate = ((row.ranked / row.total * 100) | round(0) | int) if row.total else 0 %}
+        <tr>
+          <td>{{ row.name }}</td>
+          <td class="stats-center">{{ row.reputation }}/5</td>
+          <td class="stats-center">{{ row.total }}</td>
+          <td class="stats-center stats-ranked">{{ row.ranked }}</td>
+          <td class="stats-center stats-muted">{{ row.filtered }}</td>
+          <td class="stats-center stats-muted">{{ row.failed }}</td>
+          <td class="stats-center">
+            <span class="hit-rate-bar">
+              <span class="hit-rate-fill" style="width: {{ hit_rate }}%"></span>
+            </span>
+            {{ hit_rate }}%
+          </td>
+          <td class="stats-center">
+            {% if row.avg_score %}
+            <span class="score-badge {% if row.avg_score >= 70 %}high{% elif row.avg_score < 40 %}low{% endif %}">
+              {{ row.avg_score }}
+            </span>
+            {% else %}—{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </main>
+</body>
+</html>

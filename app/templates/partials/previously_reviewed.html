@@ -1,0 +1,27 @@
+<details class="section-collapsible">
+  <summary class="section-toggle">✓ Previously Reviewed &mdash; {{ previously_reviewed_cards | length }} articles</summary>
+  <div class="section-cards">
+    {% for card in previously_reviewed_cards %}
+    <div class="card card-muted">
+      <div class="card-header">
+        <div class="card-title">
+          <a href="{{ card.url }}" target="_blank" rel="noopener noreferrer">{{ card.title }}</a>
+          <div class="card-meta">{{ card.source_name }} &middot; {{ card.published_at }}</div>
+        </div>
+        <div class="card-header-right">
+          <span class="score-badge {% if card.total_score >= 70 %}high{% elif card.total_score < 40 %}low{% endif %}">
+            {{ card.total_score | round(0) | int }}
+          </span>
+          <button class="btn-restore"
+                  hx-post="/restore-article/{{ card.id }}"
+                  hx-target="#cards-container"
+                  hx-swap="outerHTML">
+            ↩ Restore
+          </button>
+        </div>
+      </div>
+      <p class="card-summary">{{ card.summary }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</details>

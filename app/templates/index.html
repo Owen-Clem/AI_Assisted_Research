@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI_ASSISTED_RESEARCH</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/htmx.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>AI_ASSISTED_RESEARCH</h1>
+    <div class="header-right">
+      <button id="mark-read-btn" class="btn-filtered"
+              hx-post="/mark-read"
+              hx-include=".card-select:checked"
+              hx-target="#cards-container"
+              hx-swap="outerHTML">
+        Mark All as Read
+      </button>
+      <button id="unselect-btn" class="btn-filtered btn-unselect" style="display:none"
+              onclick="clearSelection()">
+        Unselect All
+      </button>
+      <a href="/stats" class="btn-filtered">Stats</a>
+      <a href="/logs" class="btn-filtered">Logs</a>
+      {% include "partials/refresh_btn.html" %}
+    </div>
+  </header>
+
+  <main id="main">
+    {% include "partials/search_bar.html" %}
+
+    <div id="cards-container">
+      {% include "partials/cards.html" %}
+    </div>
+    <div id="previously-reviewed-container">
+      {% if previously_reviewed_cards %}{% include "partials/previously_reviewed.html" %}{% endif %}
+    </div>
+    <div id="low-priority-container">
+      {% if preliminary_cards %}{% include "partials/low_priority.html" %}{% endif %}
+    </div>
+  </main>
+
+  <script>
+    function setSearchActive(active) {
+      document.getElementById('main').classList.toggle('search-active', active);
+    }
+
+    function clearSearch() {
+      const input = document.querySelector('.search-input');
+      if (input) input.value = '';
+      setSearchActive(false);
+    }
+
+    document.body.addEventListener('htmx:beforeRequest', function(e) {
+      const path = e.detail.requestConfig?.path || '';
+      if (path.startsWith('/search')) setSearchActive(true);
+      if (path === '/status' &&
+          (document.querySelectorAll('.card-select:checked').length > 0 ||
+           document.getElementById('main').classList.contains('search-active'))) {
+        e.preventDefault();
+      }
+    });
+
+    function toggleCard(el, event) {
+      if (event.target.closest('a, button, input')) return;
+      const cb = el.querySelector('.card-select');
+      if (!cb) return;
+      cb.checked = !cb.checked;
+      el.classList.toggle('selected', cb.checked);
+      updateSelection();
+    }
+
+    function updateSelection() {
+      const checked = document.querySelectorAll('.card-select:checked');
+      const count = checked.length;
+      const btn = document.getElementById('mark-read-btn');
+      const unselect = document.getElementById('unselect-btn');
+      btn.textContent = count > 0 ? `Mark Selected as Read (${count})` : 'Mark All as Read';
+      if (unselect) unselect.style.display = count > 0 ? '' : 'none';
+    }
+
+    function clearSelection() {
+      document.querySelectorAll('.card-select:checked').forEach(cb => {
+        cb.checked = false;
+        cb.closest('.card')?.classList.remove('selected');
+      });
+      updateSelection();
+    }
+
+    document.body.addEventListener('htmx:afterRequest', function(e) {
+      if (e.detail.requestConfig?.path?.startsWith('/mark-read')) {
+        clearSelection();
+      }
+    });
+
+    document.body.addEventListener('htmx:oobBeforeSwap', function(e) {
+      if (document.getElementById('main').classList.contains('search-active')) {
+        e.detail.shouldSwap = false;
+      }
+    });
+  </script>
+</body>
+</html>

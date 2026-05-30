@@ -1,0 +1,23 @@
+<div id="refresh-container"
+     hx-get="/status"
+     hx-trigger="every 30s"
+     hx-swap="outerHTML">
+  <span class="last-refresh">Last refreshed: {{ last_refresh }}</span>
+  <button class="btn-refresh"
+          hx-post="/refresh"
+          hx-target="#refresh-container"
+          hx-swap="outerHTML">
+    Refresh
+  </button>
+</div>
+<div id="cards-container"
+     hx-swap-oob="innerHTML:#cards-container">
+  {% include "partials/cards.html" %}
+</div>
+<div id="previously-reviewed-container" hx-swap-oob="innerHTML:#previously-reviewed-container">
+  {% if previously_reviewed_cards %}{% include "partials/previously_reviewed.html" %}{% endif %}
+</div>
+<div id="low-priority-container"
+     hx-swap-oob="innerHTML:#low-priority-container">
+  {% if preliminary_cards %}{% include "partials/low_priority.html" %}{% endif %}
+</div>

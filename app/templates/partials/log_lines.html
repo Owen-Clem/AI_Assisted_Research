@@ -1,0 +1,7 @@
+<div id="log-lines">
+  {% for line in lines %}
+  <div class="log-line {% if 'ERROR' in line %}log-error{% elif 'WARNING' in line %}log-warn{% elif 'INFO' in line %}log-info{% endif %}">{{ line }}</div>
+  {% else %}
+  <div class="log-line log-muted">No log entries yet.</div>
+  {% endfor %}
+</div>

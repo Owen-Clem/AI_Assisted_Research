@@ -1,0 +1,27 @@
+<details class="low-priority-section">
+  <summary class="low-priority-toggle">
+    Low Priority &mdash; {{ preliminary_cards | length }} articles
+  </summary>
+  <div class="low-priority-cards">
+    {% for card in preliminary_cards %}
+    <div class="card card-muted">
+      <div class="card-header">
+        <div class="card-title">
+          <a href="{{ card.url }}" target="_blank" rel="noopener noreferrer">{{ card.title }}</a>
+          <div class="card-meta">{{ card.source_name }} &middot; {{ card.published_at }}</div>
+        </div>
+        <div class="card-header-right">
+          <span class="score-badge low">{{ card.total_score | round(0) | int }}</span>
+          <button class="btn-force-process"
+                  hx-post="/force-process/{{ card.id }}"
+                  hx-target="closest .card-header-right"
+                  hx-swap="innerHTML">
+            Process
+          </button>
+        </div>
+      </div>
+      <p class="card-summary">{{ card.summary }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</details>

@@ -1,0 +1,9 @@
+<div id="cards-container">
+  {% include "partials/cards.html" %}
+</div>
+<div id="previously-reviewed-container" hx-swap-oob="innerHTML">
+  {% if previously_reviewed_cards %}{% include "partials/previously_reviewed.html" %}{% endif %}
+</div>
+<div id="low-priority-container" hx-swap-oob="innerHTML">
+  {% if preliminary_cards %}{% include "partials/low_priority.html" %}{% endif %}
+</div>

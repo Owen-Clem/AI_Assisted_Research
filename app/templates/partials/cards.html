@@ -1,0 +1,79 @@
+{% if active_cve or active_actor or active_tool %}
+<div class="active-filter-bar">
+  {% if active_cve %}Filtering by CVE: <strong>{{ active_cve }}</strong>{% endif %}
+  {% if active_actor %}Filtering by actor: <strong>{{ active_actor }}</strong>{% endif %}
+  {% if active_tool %}Filtering by tool: <strong>{{ active_tool }}</strong>{% endif %}
+  <button class="btn-clear-filter"
+          hx-get="/ranked"
+          hx-target="#cards-container"
+          onclick="clearSearch()">✕ Clear search</button>
+</div>
+{% endif %}
+{% if not cards %}
+<div class="empty-state">
+  {% if is_search %}
+  <strong>No matching articles</strong>
+  <p>Try broader search terms or clear your filters.</p>
+  {% else %}
+  <strong>No articles yet</strong>
+  <p>Click Refresh to run the pipeline and fetch security research.</p>
+  {% endif %}
+</div>
+{% else %}
+{% for card in cards %}
+<div class="card" onclick="toggleCard(this, event)">
+  <input type="checkbox" class="card-select" name="ids" value="{{ card.id }}">
+  <div class="card-header">
+    <div class="card-title">
+      <a href="{{ card.url }}" target="_blank" rel="noopener noreferrer">{{ card.title }}</a>
+      <div class="card-meta">{{ card.source_name }} &middot; {{ card.published_at }}</div>
+    </div>
+    <span class="score-badge {% if card.total_score >= 70 %}high{% elif card.total_score < 40 %}low{% endif %}">
+      {{ card.total_score | round(0) | int }}
+    </span>
+  </div>
+
+  <p class="card-summary">{{ card.summary }}</p>
+
+  {% if card.tooling %}
+  <div class="tooling-list">
+    {% for tool in card.tooling %}
+    <button class="tool-tag"
+            title="{{ tool.purpose }}"
+            hx-get="/search?tool={{ tool.name | urlencode }}"
+            hx-target="#cards-container">
+      {{ tool.name }}
+    </button>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if card.actors %}
+  <div class="tooling-list">
+    {% for actor in card.actors %}
+    <button class="actor-tag"
+            hx-get="/search?actor={{ actor | urlencode }}"
+            hx-target="#cards-container">
+      {{ actor }}
+    </button>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if card.cves %}
+  <div class="cve-list">
+    {% for cve in card.cves %}
+    <button class="cve-tag cve-{{ cve.severity | lower or 'unknown' }}"
+            hx-get="/cve/{{ cve.id }}"
+            hx-target="#cve-detail-{{ card.id }}"
+            hx-swap="innerHTML">
+      {% if cve.severity %}<span class="cve-sev">{{ cve.severity }}</span>{% endif %}
+      {{ cve.id }}
+    </button>
+    {% endfor %}
+  </div>
+  <div id="cve-detail-{{ card.id }}" class="cve-detail"></div>
+  {% endif %}
+</div>
+{% endfor %}
+{% endif %}

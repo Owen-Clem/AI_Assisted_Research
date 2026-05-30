@@ -1,0 +1,232 @@
+lookback_days: 7
+
+# Uncomment to enable automatic scheduled refresh (e.g. every 6 hours).
+refresh_interval_hours: 1
+
+sources:
+  - name: Risky Bulletin
+    url: https://risky.biz/feeds/risky-business-news
+    type: rss
+    reputation: 5
+
+  - name: Microsoft Security Blog
+    url: https://www.microsoft.com/en-us/security/blog/feed/
+    type: rss
+    reputation: 5
+
+  - name: CrowdStrike Blog
+    url: https://www.crowdstrike.com/blog/feed/
+    type: rss
+    reputation: 5
+
+  - name: Mandiant (Google Security)
+    url: https://cloud.google.com/blog/topics/threat-intelligence/rss.xml
+    type: rss
+    reputation: 5
+
+  - name: Sophos News
+    url: https://www.sophos.com/en-us/blog/feed?id=blt6f15f4f7deaf4242
+    type: rss
+    reputation: 5
+
+  - name: Elastic Security Labs
+    url: https://www.elastic.co/security-labs/rss/feed.xml
+    type: rss
+    reputation: 5
+
+  - name: Unit 42 (Palo Alto)
+    url: https://unit42.paloaltonetworks.com/feed/
+    type: rss
+    reputation: 5
+
+  - name: Talos Intelligence
+    url: https://feeds.feedburner.com/feedburner/Talos
+    type: rss
+    reputation: 5
+
+  - name: CISA Advisories
+    url: https://www.cisa.gov/cybersecurity-advisories/all.xml
+    type: rss
+    reputation: 5
+
+  # NVD 1.1 JSON feeds were retired by NIST — NVD 2.0 API implementation needed
+  # - name: NVD CVE Feed
+  #   url: https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-recent.json.gz
+  #   type: nvd_json
+  #   reputation: 5
+
+  # ── Offensive / Red Team Research ────────────────────────────
+
+  # SpecterOps — authors of BloodHound, SharpHound; deep AD/Windows attack research
+  - name: SpecterOps
+    url: https://posts.specterops.io/feed
+    type: rss
+    reputation: 5
+
+  # Google Project Zero — elite vulnerability research, full exploit chains, browser/kernel/sandbox
+  - name: Google Project Zero
+    url: https://googleprojectzero.blogspot.com/feeds/posts/default
+    type: rss
+    reputation: 5
+
+  # The DFIR Report — real intrusion analyses with full kill-chain, C2 traffic, and IOCs
+  - name: The DFIR Report
+    url: https://thedfirreport.com/feed/
+    type: rss
+    reputation: 5
+
+  # NCC Group Research — offensive security research, hardware, web, network, and red team tooling
+  - name: NCC Group Research
+    url: https://research.nccgroup.com/feed/
+    type: rss
+    reputation: 5
+
+  # TrustedSec — red team TTPs, C2 techniques, phishing, AD attacks
+  - name: TrustedSec
+    url: https://www.trustedsec.com/feed/
+    type: rss
+    reputation: 5
+
+  # Bishop Fox — offensive security research across web, network, and cloud
+  - name: Bishop Fox
+    url: https://bishopfox.com/blog/feed/
+    type: rss
+    reputation: 5
+
+  # Wiz Security Research — cloud attack paths, IAM abuse, container escapes, cross-tenant attacks
+  - name: Wiz Security Research
+    url: https://www.wiz.io/blog/rss
+    type: rss
+    reputation: 5
+
+  # NetSPI — offensive research: AD, Azure, AWS, web app attack techniques
+  - name: NetSPI
+    url: https://www.netspi.com/blog/technical/feed/
+    type: rss
+    reputation: 5
+
+  # Exodus Intelligence — vulnerability research and exploit development (may require verification)
+  # - name: Exodus Intelligence
+  #   url: https://blog.exodusintel.com/feed/
+  #   type: rss
+  #   reputation: 4
+
+  # ── Web Application & Vulnerability Research ─────────────────
+
+  # PortSwigger Research — deepest web attack research available; team behind Burp Suite
+  - name: PortSwigger Research
+    url: https://portswigger.net/research/rss
+    type: rss
+    reputation: 5
+
+  # watchTowr Labs — active 0-day and n-day breakdowns with full technical detail
+  - name: watchTowr Labs
+    url: https://labs.watchtowr.com/rss/
+    type: rss
+    reputation: 5
+
+  # Zero Day Initiative — tracks 0-days across all vendors; first public technical detail on many CVEs
+  - name: Zero Day Initiative
+    url: https://www.zerodayinitiative.com/blog?format=rss
+    type: rss
+    reputation: 5
+
+  # ── C2 / EDR Evasion / Windows Internals ─────────────────────
+
+  # MDSec Research — C2 technique development, EDR evasion, Windows internals red team research
+  - name: MDSec Research
+    url: https://www.mdsec.co.uk/feed/
+    type: rss
+    reputation: 5
+
+  # Outflank — blocks all bots with 403; no usable feed
+  # - name: Outflank
+  #   url: https://outflank.nl/blog/feed/
+  #   type: rss
+  #   reputation: 4
+
+  # Synacktiv — no RSS feed found
+  # - name: Synacktiv
+  #   url: https://www.synacktiv.com/publications.rss
+  #   type: rss
+  #   reputation: 4
+
+  # ── macOS / Cross-Platform ───────────────────────────────────
+
+  # Objective-See — Patrick Wardle's macOS malware and attack technique analysis
+  - name: Objective-See
+    url: https://objective-see.org/rss.xml
+    type: rss
+    reputation: 5
+
+  # ── APT / Malware ────────────────────────────────────────────
+
+  # SentinelLabs — APT campaigns, malware reversing, full kill chains
+  - name: SentinelLabs
+    url: https://www.sentinelone.com/labs/feed/
+    type: rss
+    reputation: 5
+
+  # Securelist (Kaspersky) — elite APT research; some of the most detailed nation-state campaign analyses
+  - name: Securelist
+    url: https://securelist.com/feed/
+    type: rss
+    reputation: 5
+
+  # ── Cloud Native / Containers ────────────────────────────────
+
+  # Aqua Nautilus — K8s, container escape, cloud-native attack paths
+  - name: Aqua Nautilus
+    url: https://www.aquasec.com/research/feed/
+    type: rss
+    reputation: 5
+
+  # GitHub Security Lab — supply chain and OSS vulnerability research with full exploit detail
+  - name: GitHub Security Lab
+    url: https://github.blog/tag/github-security-lab/feed/
+    type: rss
+    reputation: 5
+
+  # Trail of Bits — deep systems and cryptographic security research, novel vulnerability classes
+  - name: Trail of Bits
+    url: https://blog.trailofbits.com/feed/
+    type: rss
+    reputation: 5
+
+  # ── News / Threat Intelligence ───────────────────────────────
+
+  # Bleeping Computer — breaking security news, ransomware tracking, vulnerability disclosures
+  - name: Bleeping Computer
+    url: https://www.bleepingcomputer.com/feed/
+    type: rss
+    reputation: 5
+
+  # The Hacker News — high-volume security news; consistent technical coverage of CVEs and campaigns
+  - name: The Hacker News
+    url: https://feeds.feedburner.com/TheHackersNews
+    type: rss
+    reputation: 5
+
+  # The Record (Recorded Future) — journalism arm of Recorded Future; dedicated security reporting
+  - name: The Record
+    url: https://therecord.media/feed
+    type: rss
+    reputation: 5
+
+  # CyberScoop — dedicated cybersecurity news; strong on policy, nation-state, and incident coverage
+  - name: CyberScoop
+    url: https://cyberscoop.com/feed
+    type: rss
+    reputation: 5
+
+  # Huntress Labs — SMB-focused threat research with detailed intrusion and malware breakdowns
+  - name: Huntress Labs
+    url: https://www.huntress.com/blog/rss.xml
+    type: rss
+    reputation: 5
+
+  # VulnCheck — vulnerability exploitation intelligence; tracks in-the-wild exploitation evidence
+  - name: VulnCheck
+    url: https://vulncheck.com/feed/blog/atom.xml
+    type: rss
+    reputation: 5
