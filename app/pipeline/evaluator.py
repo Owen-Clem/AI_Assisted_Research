@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 import anthropic
 from anthropic import RateLimitError
 
-from app.pipeline import parse_json_response
+from app.pipeline import parse_json_response, _require_env
 from app.database import get_articles_by_state, set_article_state, title_already_processed, upsert_summary, upsert_score
 
 logger = logging.getLogger(__name__)
@@ -15,8 +15,8 @@ MODEL = "claude-haiku-4-5-20251001"
 ACCEPT_THRESHOLD = int(os.getenv("EVAL_ACCEPT_THRESHOLD", "55"))
 CONCURRENCY = 3  # 50 RPM org limit; Haiku responds ~1s so 3 concurrent ≈ 45 RPM safe
 
-SYSTEM_PROMPT = os.environ["EVAL_SYSTEM_PROMPT"]
-EVAL_PROMPT = os.environ["EVAL_USER_PROMPT"]
+SYSTEM_PROMPT = _require_env("EVAL_SYSTEM_PROMPT")
+EVAL_PROMPT = _require_env("EVAL_USER_PROMPT")
 
 
 async def _evaluate_one(sem: asyncio.Semaphore, client: anthropic.AsyncAnthropic, article) -> str:
@@ -62,7 +62,8 @@ async def _evaluate_one(sem: asyncio.Semaphore, client: anthropic.AsyncAnthropic
                 break
 
     if not success:
-        logger.warning("Evaluation failed for article %s — will retry next run", article["id"])
+        logger.warning("Evaluation failed for article %s after all retries — marking rejected", article["id"])
+        set_article_state(article["id"], "evaluated_rejected")
         return "error"
 
     if score >= ACCEPT_THRESHOLD:

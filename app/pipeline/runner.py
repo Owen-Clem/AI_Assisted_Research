@@ -27,10 +27,12 @@ async def run_pipeline() -> dict:
         return {"status": "already_running"}
 
     _pipeline_running = True
-    run_id = start_pipeline_run()
+    run_id = None
     stats = {"fetched": 0, "accepted": 0, "preliminary": 0, "summarized": 0, "ranked": 0, "errors": []}
 
     try:
+        run_id = start_pipeline_run()
+
         _pipeline_stage = "Fetching feeds..."
         fetched, skipped = await run_fetcher()
         stats["fetched"] = fetched
@@ -60,7 +62,11 @@ async def run_pipeline() -> dict:
 
     except Exception as e:
         logger.error("Pipeline error: %s", e, exc_info=True)
-        finish_pipeline_run(run_id, fetched=stats["fetched"], processed=0, status="error")
+        if run_id is not None:
+            try:
+                finish_pipeline_run(run_id, fetched=stats["fetched"], processed=0, status="error")
+            except Exception:
+                pass
         stats["errors"].append(str(e))
     finally:
         _pipeline_running = False

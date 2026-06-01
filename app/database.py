@@ -287,8 +287,12 @@ def search_articles(
         conditions.append("COALESCE(sm.tooling_json,'[]') LIKE ?")
         params.append(f'%{tool}%')
 
+    _SORT_MAP = {
+        "date": "a.published_at DESC",
+        "score": "COALESCE(sc.total_score, 0) DESC",
+    }
     where = "WHERE " + " AND ".join(conditions)
-    order = "a.published_at DESC" if sort == "date" else "COALESCE(sc.total_score, 0) DESC"
+    order = _SORT_MAP.get(sort, _SORT_MAP["score"])
     params.append(limit)
 
     with db() as conn:

@@ -1,5 +1,16 @@
 import json
+import os
 import re
+
+
+def _require_env(key: str) -> str:
+    val = os.getenv(key)
+    if not val:
+        raise RuntimeError(
+            f"Required environment variable {key!r} is not set. "
+            "Copy .env.example to .env and fill in all values."
+        )
+    return val
 
 
 def parse_json_response(text: str):

@@ -5,6 +5,7 @@ import os
 import re
 from contextlib import asynccontextmanager
 from pathlib import Path
+from urllib.parse import urlparse
 
 import httpx
 import yaml
@@ -43,6 +44,7 @@ from app.pipeline.scorer import rescore_all
 CVE_RE = re.compile(r"CVE-\d{4}-\d{4,7}", re.IGNORECASE)
 logger = logging.getLogger(__name__)
 _cve_cache: dict[str, dict] = {}
+_active_tasks: set[asyncio.Task] = set()
 
 
 def _load_config() -> dict:
@@ -54,26 +56,38 @@ async def _auto_refresh_loop():
     while True:
         try:
             interval_hours = _load_config().get("refresh_interval_hours") or 1.0
+            await asyncio.sleep(float(interval_hours) * 3600)
+            logger.info("Auto-refresh triggered (interval=%.1fh)", interval_hours)
+            if not is_running():
+                asyncio.create_task(run_pipeline())
+        except asyncio.CancelledError:
+            raise
         except Exception as e:
-            logger.error("Auto-refresh: failed to read config, retrying in 60s: %s", e)
+            logger.error("Auto-refresh loop error, retrying in 60s: %s", e)
             await asyncio.sleep(60)
-            continue
-        await asyncio.sleep(float(interval_hours) * 3600)
-        logger.info("Auto-refresh triggered (interval=%.1fh)", interval_hours)
-        if not is_running():
-            asyncio.create_task(run_pipeline())
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
+    _background_tasks: set[asyncio.Task] = set()
+
     # Auto-run only on first ever start, or to resume a previously interrupted run.
     if not get_last_run_time() or get_articles_by_state("fetched"):
-        asyncio.create_task(run_pipeline())
+        t = asyncio.create_task(run_pipeline())
+        _background_tasks.add(t)
+        t.add_done_callback(_background_tasks.discard)
 
-    asyncio.create_task(_auto_refresh_loop())
+    _refresh_task = asyncio.create_task(_auto_refresh_loop())
+    _background_tasks.add(_refresh_task)
 
     yield
+
+    _refresh_task.cancel()
+    try:
+        await _refresh_task
+    except asyncio.CancelledError:
+        pass
 
 
 app = FastAPI(lifespan=lifespan)
@@ -81,7 +95,24 @@ app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="stat
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 
+@app.middleware("http")
+async def csrf_guard(request: Request, call_next):
+    if request.method in ("POST", "PUT", "DELETE", "PATCH"):
+        origin = request.headers.get("origin")
+        if origin is not None and not (
+            origin.startswith("http://localhost")
+            or origin.startswith("http://127.0.0.1")
+        ):
+            return HTMLResponse("Forbidden", status_code=403)
+    return await call_next(request)
+
+
 _SEVERITY_ORDER = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
+
+
+def _safe_url(url: str) -> str:
+    """Return url only if scheme is http/https, otherwise '#' to block javascript: execution."""
+    return url if urlparse(url).scheme in ("http", "https") else "#"
 
 
 def _build_cves(cves_json: str, scores_json: str) -> list[dict]:
@@ -108,7 +139,7 @@ def _build_cards(articles) -> list[dict]:
         cards.append({
             "id": d["id"],
             "title": d["title"],
-            "url": d["url"],
+            "url": _safe_url(d["url"]),
             "source_name": d["source_name"],
             "published_at": (d.get("published_at") or "")[:10],
             "summary": d.get("summary_text", ""),
@@ -131,7 +162,7 @@ def _build_preliminary_cards(articles) -> list[dict]:
         cards.append({
             "id": a["id"],
             "title": a["title"],
-            "url": a["url"],
+            "url": _safe_url(a["url"]),
             "source_name": a["source_name"],
             "published_at": (a["published_at"] or "")[:10],
             "summary": summary,
@@ -200,7 +231,9 @@ async def search(
 @app.post("/refresh", response_class=HTMLResponse)
 async def refresh(request: Request):
     if not is_running():
-        asyncio.create_task(run_pipeline())
+        t = asyncio.create_task(run_pipeline())
+        _active_tasks.add(t)
+        t.add_done_callback(_active_tasks.discard)
     return templates.TemplateResponse("partials/refresh_btn.html", {
         "request": request,
         "pipeline_running": True,
@@ -221,7 +254,9 @@ async def force_process(article_id: int):
         return HTMLResponse("<span class='force-queued'>Already processed</span>", status_code=409)
     set_article_state(article_id, "evaluated_accepted")
     if not is_running():
-        asyncio.create_task(run_pipeline())
+        t = asyncio.create_task(run_pipeline())
+        _active_tasks.add(t)
+        t.add_done_callback(_active_tasks.discard)
     return HTMLResponse("<span class='force-queued'>Queued ✓</span>")
 
 
@@ -252,6 +287,23 @@ async def ranked(request: Request):
     return templates.TemplateResponse("partials/cards.html", {
         "request": request,
         "cards": _build_cards(get_ranked_articles()),
+    })
+
+
+@app.get("/filtered", response_class=HTMLResponse)
+async def filtered_view(request: Request):
+    articles = get_preliminary_articles()
+    rows = []
+    for a in articles:
+        d = dict(a)
+        d["published_at"] = (d.get("published_at") or "")[:10]
+        d["url"] = _safe_url(d.get("url") or "")
+        raw = (d.get("content_text") or "").strip()
+        d["content_text"] = (raw[:600].rsplit(" ", 1)[0] + "…" if len(raw) > 600 else raw)
+        rows.append(d)
+    return templates.TemplateResponse("partials/filtered.html", {
+        "request": request,
+        "rows": rows,
     })
 
 

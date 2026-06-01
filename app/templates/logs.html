@@ -27,7 +27,7 @@
          id="log-container"
          hx-get="/logs/lines"
          hx-trigger="every 3s"
-         hx-target="#log-lines"
+         hx-target="#log-container"
          hx-swap="innerHTML">
       {% include "partials/log_lines.html" %}
     </div>

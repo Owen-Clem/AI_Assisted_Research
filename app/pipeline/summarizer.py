@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 import anthropic
 from anthropic import RateLimitError
 
-from app.pipeline import parse_json_response
+from app.pipeline import parse_json_response, _require_env
 from app.database import get_articles_by_state, set_article_state, upsert_summary
 
 logger = logging.getLogger(__name__)
@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 MODEL = "claude-sonnet-4-6"
 CONCURRENCY = 2  # 30K TPM limit; Sonnet summaries ~3-4K tokens each → 2 concurrent stays safe
 
-SYSTEM_PROMPT = os.environ["SUMMARIZER_SYSTEM_PROMPT"]
-SUMMARY_PROMPT = os.environ["SUMMARIZER_USER_PROMPT"]
+SYSTEM_PROMPT = _require_env("SUMMARIZER_SYSTEM_PROMPT")
+SUMMARY_PROMPT = _require_env("SUMMARIZER_USER_PROMPT")
 
 
 async def _summarize_one(
@@ -47,6 +47,8 @@ async def _summarize_one(
                 logger.warning("Summarizer error for article %s: %s", article["id"], e)
                 break
         if data is None:
+            logger.warning("Summarization failed for article %s after all retries — marking preliminary", article["id"])
+            set_article_state(article["id"], "preliminary_rated")
             return False
 
     try:
