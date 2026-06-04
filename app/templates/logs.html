@@ -19,6 +19,12 @@
   <main>
     <div class="logs-toolbar">
       <span class="log-label">Application logs (last 500 lines) — auto-refreshing every 3s</span>
+      <div class="log-filters">
+        <label><input type="checkbox" class="level-filter" data-level="ERROR" checked> Errors</label>
+        <label><input type="checkbox" class="level-filter" data-level="WARNING" checked> Warnings</label>
+        <label><input type="checkbox" class="level-filter" data-level="INFO" checked> Info</label>
+        <label><input type="checkbox" id="show-access"> Access logs</label>
+      </div>
       <label class="log-scroll-toggle">
         <input type="checkbox" id="auto-scroll" checked> Auto-scroll
       </label>
@@ -34,12 +40,32 @@
   </main>
   <script>
     const container = document.getElementById('log-container');
-    const checkbox  = document.getElementById('auto-scroll');
-    function scrollBottom() {
-      if (checkbox.checked) container.scrollTop = container.scrollHeight;
+
+    function applyFilters() {
+      const showAccess = document.getElementById('show-access').checked;
+      const levels = {};
+      document.querySelectorAll('.level-filter').forEach(cb => {
+        levels[cb.dataset.level] = cb.checked;
+      });
+      document.querySelectorAll('.log-line').forEach(el => {
+        const text = el.textContent;
+        const isAccess = text.includes('uvicorn.access');
+        if (isAccess && !showAccess) { el.style.display = 'none'; return; }
+        const level = Object.keys(levels).find(l => text.includes(l));
+        el.style.display = (level === undefined || levels[level]) ? '' : 'none';
+      });
     }
+
+    function scrollBottom() {
+      if (document.getElementById('auto-scroll').checked)
+        container.scrollTop = container.scrollHeight;
+    }
+
+    document.querySelector('.logs-toolbar').addEventListener('change', applyFilters);
+    document.body.addEventListener('htmx:afterSwap', () => { applyFilters(); scrollBottom(); });
+
+    applyFilters();
     scrollBottom();
-    document.body.addEventListener('htmx:afterSwap', scrollBottom);
   </script>
 </body>
 </html>
