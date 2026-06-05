@@ -109,7 +109,7 @@ sources:
   # - name: Exodus Intelligence
   #   url: https://blog.exodusintel.com/feed/
   #   type: rss
-  #   reputation: 4
+  #   reputation: 5
 
   # ── Web Application & Vulnerability Research ─────────────────
 
@@ -143,13 +143,13 @@ sources:
   # - name: Outflank
   #   url: https://outflank.nl/blog/feed/
   #   type: rss
-  #   reputation: 4
+  #   reputation: 5
 
   # Synacktiv — no RSS feed found
   # - name: Synacktiv
   #   url: https://www.synacktiv.com/publications.rss
   #   type: rss
-  #   reputation: 4
+  #   reputation: 5
 
   # ── macOS / Cross-Platform ───────────────────────────────────
 
@@ -173,6 +173,24 @@ sources:
     type: rss
     reputation: 5
 
+  # ESET WeLiveSecurity — strong APT campaign and malware research from a major AV vendor
+  - name: ESET WeLiveSecurity
+    url: https://www.welivesecurity.com/feed/
+    type: rss
+    reputation: 5
+
+  # Avast Decoded — malware reversing and threat research from Avast's threat intel team
+  - name: Avast Decoded
+    url: https://decoded.avast.io/feed/
+    type: rss
+    reputation: 5
+
+  # Malwarebytes Labs — malware analysis and threat research; accessible technical breakdowns
+  - name: Malwarebytes Labs
+    url: https://www.malwarebytes.com/blog/feed/
+    type: rss
+    reputation: 5
+
   # ── Cloud Native / Containers ────────────────────────────────
 
   # Aqua Nautilus — K8s, container escape, cloud-native attack paths
@@ -193,7 +211,33 @@ sources:
     type: rss
     reputation: 5
 
+  # ── Vulnerability Research ───────────────────────────────────
+
+  # Check Point Research — vulnerability research, exploit analysis, and threat campaigns
+  - name: Check Point Research
+    url: https://research.checkpoint.com/feed/
+    type: rss
+    reputation: 5
+
+  # Rapid7 — vulnerability research and CVE coverage; strong on exploitation detail
+  - name: Rapid7
+    url: https://blog.rapid7.com/rss/
+    type: rss
+    reputation: 5
+
+  # WithSecure Labs — offensive security research; AD attacks, EDR evasion, red team tooling
+  - name: WithSecure Labs
+    url: https://labs.withsecure.com/feed
+    type: rss
+    reputation: 5
+
   # ── News / Threat Intelligence ───────────────────────────────
+
+  # Recorded Future — strategic threat intelligence; nation-state tracking and campaign attribution
+  - name: Recorded Future
+    url: https://www.recordedfuture.com/feed
+    type: rss
+    reputation: 5
 
   # Bleeping Computer — breaking security news, ransomware tracking, vulnerability disclosures
   - name: Bleeping Computer

@@ -68,7 +68,7 @@ A background loop reads `refresh_interval_hours` from `sources.yaml` on each ite
 
 ## Features
 
-- **30+ curated sources** across threat intelligence, offensive research, APT/malware analysis, web/cloud attack research, and CVE exploitation
+- **40 curated sources** across threat intelligence, offensive research, APT/malware analysis, web/cloud attack research, and CVE exploitation
 - **Cost-optimized AI usage:** cheap Haiku filters ~59% of articles before Sonnet is invoked (mileage may vary depending on user prompts)
 - **Structured extraction:** every ranked article includes a summary, tooling breakdown, threat actor tags, and CVE tags with inline NVD detail on click
 - **Search and filter:** full-text search across ranked articles with source, CVE, actor, and tool filters
