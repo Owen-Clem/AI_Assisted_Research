@@ -21,6 +21,14 @@ def _strip_html(html: str) -> str:
 
 def _parse_date(entry) -> str:
     for attr in ("published", "updated"):
+        # feedparser normalizes all date formats to UTC struct_time in *_parsed
+        parsed = getattr(entry, f"{attr}_parsed", None)
+        if parsed:
+            try:
+                return datetime(*parsed[:6], tzinfo=timezone.utc).isoformat()
+            except Exception:
+                pass
+        # Fallback: raw RFC 2822 string (RSS 2.0)
         val = getattr(entry, attr, None)
         if val:
             try:
