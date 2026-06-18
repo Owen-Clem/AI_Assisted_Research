@@ -1,6 +1,6 @@
 # AI-Assisted Security Research Dashboard
 
-This project is a locally hosted open-source security research feed that aggregates 30+ security research sources, utilizing a multi-stage AI pipeline to perform triage and summary of articles, content ranking, and display of articles based on tunable prompts.
+This project is a locally hosted open-source security research feed that aggregates 40+ security research sources, utilizing a multi-stage AI pipeline to perform triage and summary of articles, content ranking, and display of articles based on tunable prompts.
 
 ![Dashboard](https://img.shields.io/badge/stack-FastAPI%20%7C%20HTMX%20%7C%20SQLite-blue)
 ![AI](https://img.shields.io/badge/AI-Claude%20Haiku%20%2B%20Sonnet-purple)
