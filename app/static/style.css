@@ -130,6 +130,29 @@ main { max-width: 960px; margin: 0 auto; padding: 24px 16px; }
   font-size: 13px;
 }
 
+.series-info { margin-top: 4px; }
+
+.series-toggle {
+  color: var(--muted);
+  font-size: 11px;
+  cursor: pointer;
+}
+.series-toggle:hover { color: var(--text); }
+
+.series-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.series-part-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
 .tooling-list {
   display: flex;
   flex-wrap: wrap;

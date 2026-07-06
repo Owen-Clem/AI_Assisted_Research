@@ -1,0 +1,19 @@
+{% if card.series_parts %}
+<details class="series-info">
+  <summary class="series-toggle">Multipart Series</summary>
+  <div class="series-detail">
+    {% for part in card.series_parts %}
+    <div class="series-part-row">
+      <a href="{{ part.url }}" target="_blank" rel="noopener noreferrer">{{ part.title }}</a>
+      {% if part.total_score is not none %}
+      <span class="score-badge {% if part.total_score >= 70 %}high{% elif part.total_score < 40 %}low{% endif %}">
+        {{ part.total_score | round(0) | int }}
+      </span>
+      {% else %}
+      <span class="score-badge low" title="{{ part.status_label }}">N/A</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</details>
+{% endif %}

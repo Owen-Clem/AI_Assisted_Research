@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import re
+import sqlite3
 from contextlib import asynccontextmanager
 from pathlib import Path
 from urllib.parse import urlparse
@@ -24,6 +25,7 @@ load_dotenv(BASE_DIR.parent / ".env", override=True)
 setup_log_buffer()
 
 from app.database import (
+    find_series_articles,
     get_article_state,
     get_articles_by_state,
     get_last_run_time,
@@ -40,6 +42,7 @@ from app.database import (
 )
 from app.pipeline.runner import get_pipeline_stage, is_running, run_pipeline
 from app.pipeline.scorer import rescore_all
+from app.series import parse_part
 
 CVE_RE = re.compile(r"CVE-\d{4}-\d{4,7}", re.IGNORECASE)
 logger = logging.getLogger(__name__)
@@ -132,8 +135,61 @@ def _build_cves(cves_json: str, scores_json: str) -> list[dict]:
     )
 
 
+_SERIES_STATUS_LABELS = {
+    "fetched": "not yet processed",
+    "evaluated_accepted": "not yet processed",
+    "summarized": "not yet processed",
+    "preliminary_rated": "filtered out",
+    "evaluated_rejected": "filtered out",
+}
+
+
+def _build_series_parts(article_id: int, title: str, cache: dict | None = None) -> list[dict]:
+    parsed = parse_part(title)
+    if not parsed:
+        return []
+    base, _ = parsed
+    if cache is not None and base in cache:
+        siblings = cache[base]
+    else:
+        siblings = find_series_articles(base)
+        if cache is not None:
+            cache[base] = siblings
+
+    # Prefer an explicit "Part N" match over the bare-title fallback when both
+    # exist for the same part number (e.g. an unlabeled opener republished
+    # later under an explicit "Part 1" title) to avoid a duplicate entry.
+    by_number: dict[int, sqlite3.Row] = {}
+    bare_candidate = None
+    for row in siblings:
+        if row["id"] == article_id:
+            continue
+        sibling = parse_part(row["title"])
+        if sibling and sibling[0] == base:
+            by_number.setdefault(sibling[1], row)
+        elif " ".join(row["title"].lower().split()) == base:
+            bare_candidate = row
+    if bare_candidate is not None:
+        by_number.setdefault(1, bare_candidate)
+
+    parts = [
+        {
+            "part_number": part_number,
+            "title": row["title"],
+            "url": _safe_url(row["url"]),
+            "source_name": row["source_name"],
+            "total_score": row["total_score"] if row["pipeline_state"] == "ranked" else None,
+            "status_label": _SERIES_STATUS_LABELS.get(row["pipeline_state"], row["pipeline_state"]),
+        }
+        for part_number, row in by_number.items()
+    ]
+    parts.sort(key=lambda p: p["part_number"])
+    return parts
+
+
 def _build_cards(articles) -> list[dict]:
     cards = []
+    series_cache: dict = {}
     for a in articles:
         d = dict(a)
         cards.append({
@@ -147,12 +203,14 @@ def _build_cards(articles) -> list[dict]:
             "actors": json.loads(d["actors_json"]) if d.get("actors_json") else [],
             "cves": _build_cves(d.get("cves_json", "[]"), d.get("cve_scores_json", "")),
             "total_score": d.get("total_score", 0),
+            "series_parts": _build_series_parts(d["id"], d["title"], series_cache),
         })
     return cards
 
 
 def _build_preliminary_cards(articles) -> list[dict]:
     cards = []
+    series_cache: dict = {}
     for a in articles:
         if a["source_name"] == "Risky Bulletin":
             raw = (a["content_text"] or "").strip()
@@ -167,6 +225,7 @@ def _build_preliminary_cards(articles) -> list[dict]:
             "published_at": (a["published_at"] or "")[:10],
             "summary": summary,
             "total_score": a["total_score"],
+            "series_parts": _build_series_parts(a["id"], a["title"], series_cache),
         })
     return cards
 
@@ -294,12 +353,14 @@ async def ranked(request: Request):
 async def filtered_view(request: Request):
     articles = get_preliminary_articles()
     rows = []
+    series_cache: dict = {}
     for a in articles:
         d = dict(a)
         d["published_at"] = (d.get("published_at") or "")[:10]
         d["url"] = _safe_url(d.get("url") or "")
         raw = (d.get("content_text") or "").strip()
         d["content_text"] = (raw[:600].rsplit(" ", 1)[0] + "…" if len(raw) > 600 else raw)
+        d["series_parts"] = _build_series_parts(d["id"], d["title"], series_cache)
         rows.append(d)
     return templates.TemplateResponse("partials/filtered.html", {
         "request": request,

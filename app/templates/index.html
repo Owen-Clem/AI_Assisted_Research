@@ -65,7 +65,7 @@
     });
 
     function toggleCard(el, event) {
-      if (event.target.closest('a, button, input')) return;
+      if (event.target.closest('a, button, input, summary, .series-info')) return;
       const cb = el.querySelector('.card-select');
       if (!cb) return;
       cb.checked = !cb.checked;

@@ -154,6 +154,35 @@ def title_already_processed(title: str) -> bool:
         return row is not None
 
 
+def _escape_like(value: str) -> str:
+    """Escape LIKE wildcard characters so they match literally."""
+    return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
+def find_series_articles(base_title: str, limit: int = 50) -> list[sqlite3.Row]:
+    """Find all articles whose title starts with the given series base title.
+
+    Matches the bare base title exactly (series openers are often unlabeled,
+    "Part 1" implicit) or any title with the base as a prefix (covers "...
+    Part N" and "... Part N: per-part subtitle" formats). Callers should
+    verify each result actually belongs to the series via parse_part(), since
+    the prefix match alone can't distinguish "Foo Part 2" from unrelated
+    titles that happen to start with "Foo".
+    """
+    with db() as conn:
+        return conn.execute(
+            """SELECT a.id, a.title, a.url, a.pipeline_state, a.published_at,
+                      s.name AS source_name, sc.total_score
+               FROM articles a
+               JOIN sources s ON a.source_id = s.id
+               LEFT JOIN scores sc ON sc.article_id = a.id
+               WHERE lower(trim(a.title)) = ?
+                  OR lower(trim(a.title)) LIKE ? ESCAPE '\\'
+               LIMIT ?""",
+            (base_title, f"{_escape_like(base_title)}%", limit),
+        ).fetchall()
+
+
 def insert_article(source_id: int, url: str, title: str, published_at: str, content_text: str, fetched_at: str) -> int:
     canonical = _normalize_url(url)
     title = " ".join(title.split())  # normalize whitespace so title_already_processed SQL matches

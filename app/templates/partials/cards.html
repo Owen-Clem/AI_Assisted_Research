@@ -27,6 +27,7 @@
     <div class="card-title">
       <a href="{{ card.url }}" target="_blank" rel="noopener noreferrer">{{ card.title }}</a>
       <div class="card-meta">{{ card.source_name }} &middot; {{ card.published_at }}</div>
+      {% include "partials/series_dropdown.html" %}
     </div>
     <span class="score-badge {% if card.total_score >= 70 %}high{% elif card.total_score < 40 %}low{% endif %}">
       {{ card.total_score | round(0) | int }}
