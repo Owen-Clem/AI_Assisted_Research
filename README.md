@@ -1,6 +1,6 @@
 # AI-Assisted Security Research Dashboard
 
-This project is a locally hosted open-source security research feed that aggregates 40+ security research sources, utilizing a multi-stage AI pipeline to perform triage and summary of articles, content ranking, and display of articles based on tunable prompts.
+This project is a locally hosted open-source security research feed that aggregates 47+ security research sources, utilizing a multi-stage AI pipeline to perform triage and summary of articles, content ranking, and display of articles based on tunable prompts.
 
 ![Dashboard](https://img.shields.io/badge/stack-FastAPI%20%7C%20HTMX%20%7C%20SQLite-blue)
 ![AI](https://img.shields.io/badge/AI-Claude%20Haiku%20%2B%20Sonnet-purple)
@@ -68,9 +68,10 @@ A background loop reads `refresh_interval_hours` from `sources.yaml` on each ite
 
 ## Features
 
-- **40 curated sources** across threat intelligence, offensive research, APT/malware analysis, web/cloud attack research, and CVE exploitation
-- **Cost-optimized AI usage:** cheap Haiku filters ~59% of articles before Sonnet is invoked (mileage may vary depending on user prompts)
+- **47 curated sources** across threat intelligence, offensive research, detection engineering, APT/malware analysis, web/cloud attack research, AI/LLM security, and CVE exploitation
+- **Cost-optimized AI usage:** cheap Haiku filters ~89% of articles before Sonnet is invoked (mileage may vary depending on user prompts)
 - **Structured extraction:** every ranked article includes a summary, tooling breakdown, threat actor tags, and CVE tags with inline NVD detail on click
+- **Multi-part series detection:** articles that are part of a "Part N" series (Arabic or Roman numerals) automatically link to every other part, with each part's score or filter status
 - **Search and filter:** full-text search across ranked articles with source, CVE, actor, and tool filters
 - **Mark as read:** select individual cards or bulk-archive the feed; reviewed articles collapse into a separate section
 - **Force-promote:** manually push a Low Priority article through the full summarization pipeline
@@ -150,7 +151,7 @@ All content scoring and prompt configuration is read from `.env`. Copy the provi
 ## Security Notes
 
 - Server binds to `127.0.0.1` only -- not accessible on the network
-- All article content is HTML-stripped before being sent to Claude
+- All article content is HTML-stripped and wrapped in XML delimiters before being sent to Claude, and both system prompts explicitly instruct the model to treat that content as untrusted data, never as instructions to follow
 - Jinja2 autoescaping is enabled -- external content is never rendered as raw HTML
 - `.env` is gitignored -- API keys are never committed
 
@@ -163,6 +164,7 @@ app/
     main.py                  # FastAPI app, routes, lifespan
     database.py              # All SQLite access
     log_buffer.py            # In-memory log ring buffer
+    series.py                # "Part N" series title parsing (Arabic + Roman numerals)
     pipeline/
         runner.py            # Pipeline orchestration
         fetcher.py           # RSS ingestion
