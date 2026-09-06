@@ -105,6 +105,12 @@ sources:
     type: rss
     reputation: 5
 
+  # Dirk-jan Mollema — leading active Entra ID/AD researcher; discovered CVE-2025-55241
+  - name: dirkjanm.io
+    url: https://dirkjanm.io/feed.xml
+    type: rss
+    reputation: 5
+
   # Exodus Intelligence — vulnerability research and exploit development (may require verification)
   # - name: Exodus Intelligence
   #   url: https://blog.exodusintel.com/feed/
@@ -136,6 +142,12 @@ sources:
   # MDSec Research — C2 technique development, EDR evasion, Windows internals red team research
   - name: MDSec Research
     url: https://www.mdsec.co.uk/feed/
+    type: rss
+    reputation: 5
+
+  # Hexacorn — deep Windows internals, LOLBins, and "little known secrets" research
+  - name: Hexacorn
+    url: http://www.hexacorn.com/blog/feed/
     type: rss
     reputation: 5
 
@@ -208,6 +220,40 @@ sources:
   # Trail of Bits — deep systems and cryptographic security research, novel vulnerability classes
   - name: Trail of Bits
     url: https://blog.trailofbits.com/feed/
+    type: rss
+    reputation: 5
+
+  # Permiso "Cloud Chronicles" — cloud identity threat research, AWS-focused
+  - name: Permiso
+    url: https://permiso.io/blog/rss.xml
+    type: rss
+    reputation: 5
+
+  # Datadog Security Labs — cloud/supply-chain threat research, AWS/Azure/K8s
+  - name: Datadog Security Labs
+    url: https://securitylabs.datadoghq.com/rss/feed.xml
+    type: rss
+    reputation: 5
+
+  # ── Detection Engineering / MITRE ATT&CK ─────────────────────
+
+  # Nextron Systems — Florian Roth (creator of Sigma, THOR); detection rule research
+  - name: Nextron Systems
+    url: https://www.nextron-systems.com/feed/
+    type: rss
+    reputation: 5
+
+  # MITRE ATT&CK — official framework updates and detection strategy guidance, direct from the source
+  - name: MITRE ATT&CK
+    url: https://medium.com/feed/mitre-attack
+    type: rss
+    reputation: 5
+
+  # ── AI / LLM Security ─────────────────────────────────────────
+
+  # Embrace The Red — Johann Rehberger; primary research on LLM/agentic AI prompt injection exploits
+  - name: Embrace The Red
+    url: https://embracethered.com/blog/index.xml
     type: rss
     reputation: 5
 
