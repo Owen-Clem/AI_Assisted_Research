@@ -33,6 +33,13 @@ async def _fetch_cvss(client: httpx.AsyncClient, cve_id: str, api_key: str | Non
                         "severity": cvss.get("baseSeverity", cvss.get("baseSeverityV2", "")),
                     }
             return {}
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 404:
+                return {}  # CVE not in NVD — permanent, retrying won't help
+            if attempt == 0:
+                await asyncio.sleep(10)
+            else:
+                logger.warning("NVD lookup failed for %s: %s", cve_id, e)
         except Exception as e:
             if attempt == 0:
                 await asyncio.sleep(10)

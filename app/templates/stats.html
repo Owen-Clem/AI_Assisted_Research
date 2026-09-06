@@ -5,16 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Source Stats — Security Research</title>
   <link rel="stylesheet" href="/static/style.css">
-  <script src="https://unpkg.com/htmx.org@1.9.12/dist/htmx.min.js"></script>
+  <script src="/static/htmx.min.js"></script>
 </head>
 <body>
   <header>
     <h1>Security <span>Research</span></h1>
     <div class="header-right">
-      <button class="btn-filtered"
+      <button id="rescore-btn" class="btn-filtered"
               hx-post="/rescore"
-              hx-swap="none"
-              onclick="this.textContent='Done ✓'">
+              hx-swap="none">
         Re-score All
       </button>
       <a href="/" class="btn-filtered">← Dashboard</a>
@@ -64,5 +63,13 @@
       </tbody>
     </table>
   </main>
+
+  <script>
+    document.body.addEventListener('htmx:afterRequest', function(e) {
+      if (e.detail.requestConfig?.path === '/rescore') {
+        document.getElementById('rescore-btn').textContent = e.detail.successful ? 'Done ✓' : 'Failed ✗';
+      }
+    });
+  </script>
 </body>
 </html>

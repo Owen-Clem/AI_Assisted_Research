@@ -312,18 +312,20 @@ async def force_process(article_id: int):
     if state not in _FORCE_PROCESSABLE_STATES:
         return HTMLResponse("<span class='force-queued'>Already processed</span>", status_code=409)
     set_article_state(article_id, "evaluated_accepted")
-    if not is_running():
-        t = asyncio.create_task(run_pipeline())
-        _active_tasks.add(t)
-        t.add_done_callback(_active_tasks.discard)
+    if is_running():
+        # A run already in flight may have passed the summarizer stage, in which
+        # case this article won't be picked up until the next run — say so
+        # rather than implying immediate processing.
+        return HTMLResponse("<span class='force-queued'>Queued for next refresh</span>")
+    t = asyncio.create_task(run_pipeline())
+    _active_tasks.add(t)
+    t.add_done_callback(_active_tasks.discard)
     return HTMLResponse("<span class='force-queued'>Queued ✓</span>")
 
 
 @app.get("/status", response_class=HTMLResponse)
 async def status(request: Request):
     running = is_running()
-    articles = get_ranked_articles() if not running else []
-    cards = _build_cards(articles) if not running else None
     last_refresh = get_last_run_time()
 
     if running:
